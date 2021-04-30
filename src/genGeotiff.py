@@ -88,9 +88,8 @@ def transformGrib(filename: str):
                 except OSError:
                     continue
 
-                tiffname = f"{var}_{date}.tiff"
-
                 pathfile = f'{path_dir}/{tiffname}'
+                print('Saving: {tiffname}')
 
                 # WRITE GIFF
                 nw_ds = rasterio.open(pathfile, 'w', driver='GTiff',
