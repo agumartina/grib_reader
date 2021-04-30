@@ -11,6 +11,9 @@ from osgeo import osr, gdal, gdal_array
 from affine import Affine
 
 
+ray.init(address='auto', _redis_password='5241590000000000')
+
+
 def getList(path: str):
     return glob.glob(path, recursive=True)
 
