@@ -11,7 +11,7 @@ from osgeo import osr, gdal, gdal_array
 from affine import Affine
 
 
-# ray.init(address='auto', _redis_password='5241590000000000')
+ray.init(address='auto', _redis_password='5241590000000000')
 
 
 def getList(path: str):
@@ -25,7 +25,7 @@ def getGeoT(extent, nlines, ncols):
     return [extent[0], resx, 0, extent[3], 0, -resy]
 
 
-# @ray.remote
+@ray.remote
 def transformGrib(filename: str):
 
     # ORIGIN DATASET
@@ -84,14 +84,15 @@ def transformGrib(filename: str):
                 # Build filename
                 time = pd.to_datetime(arr_in.initial_time0_hours.values)
                 date = f"{time.strftime('%Y-%m-%dZ%H:%M')}"
-                path_dir = f"../geotiff/{var}"
+                path_dir = f"/home/datos/geotiff/{var}"
+
                 try:
                     os.makedirs(path_dir)
                 except OSError:
                     print("Folder exist")
-
+                tiffname = f"{var}_{date}.tiff"
                 pathfile = f'{path_dir}/{tiffname}'
-                print('Saving: {tiffname}')
+                print(f'Saving: {pathfile}')
 
                 # WRITE GIFF
                 nw_ds = rasterio.open(pathfile, 'w', driver='GTiff',
