@@ -11,7 +11,7 @@ from osgeo import osr, gdal, gdal_array
 from affine import Affine
 
 
-ray.init(address='auto', _redis_password='5241590000000000')
+# ray.init(address='auto', _redis_password='5241590000000000')
 
 
 def getList(path: str):
@@ -25,21 +25,23 @@ def getGeoT(extent, nlines, ncols):
     return [extent[0], resx, 0, extent[3], 0, -resy]
 
 
-@ray.remote
+# @ray.remote
 def transformGrib(filename: str):
 
     # ORIGIN DATASET
     grib = gdal.Open(filename)
     origin_proj = grib.GetProjection()
     origin_transform = grib.GetGeoTransform()
+    grib = None
     # origin_xsize = grib.RasterXSize
     # origin_ysize = grib.RasterYSize
-
+    print(f"Processing {filename}")
     ds = xr.open_dataset(filename, engine="pynio")
 
     for var in ds.variables:
         if var in DICT_VAR:
             for arr_in in ds[var]:
+                print(f"Reproj: {var} time: {arr_in.initial_time0_hours.values}")
                 # Origen
                 origin = gdal_array.OpenArray(np.flipud(arr_in.values))
                 origin.SetProjection(origin_proj)
@@ -66,7 +68,7 @@ def transformGrib(filename: str):
                 gdal.ReprojectImage(
                     origin,
                     grid,
-                    grib.GetProjection(),
+                    origin_proj,
                     targetPrj.ExportToWkt(),
                     gdal.GRA_NearestNeighbour,
                     options=['NUM_THREADS=ALL_CPUS']
@@ -86,11 +88,12 @@ def transformGrib(filename: str):
                 try:
                     os.makedirs(path_dir)
                 except OSError:
-                    continue
+                    print("Folder exist")
 
                 tiffname = f"{var}_{date}.tiff"
 
                 pathfile = f'{path_dir}/{tiffname}'
+                print(f"Saving: {tiffname}")
 
                 # WRITE GIFF
                 nw_ds = rasterio.open(pathfile, 'w', driver='GTiff',
