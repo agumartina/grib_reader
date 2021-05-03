@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 import ray
-import os
+from pathlib import Path
 from config.constants import EXTENT, KM_PER_DEGREE, RESOLUTION, DICT_VAR
 from osgeo import osr, gdal, gdal_array
 from affine import Affine
@@ -41,6 +41,18 @@ def transformGrib(filename: str):
     for var in ds.variables:
         if var in DICT_VAR:
             for arr_in in ds[var]:
+                # Build filename
+                time = pd.to_datetime(arr_in.initial_time0_hours.values)
+                date = f"{time.strftime('%Y-%m-%dZ%H:%M')}"
+                path_dir = f"/home/datos/geotiff/{var}"
+                tiffname = f"{var}_{date}.tiff"
+                pathfile = f'{path_dir}/{tiffname}'
+
+                # do not process if the file exist
+                if Path(pathfile).is_file():
+                    print("File exist")
+                    continue
+
                 print(f"Reproj: {var} time: {arr_in.initial_time0_hours.values}")
                 # Origen
                 origin = gdal_array.OpenArray(np.flipud(arr_in.values))
@@ -80,18 +92,10 @@ def transformGrib(filename: str):
                 # Get transform in Affine format
                 geotransform = grid.GetGeoTransform()
                 transform = Affine.from_gdal(*geotransform)
+                # create the dir if it not exist
+                pathfolder = Path(path_dir)
+                pathfolder.mkdir(parents=True, exist_ok=True)
 
-                # Build filename
-                time = pd.to_datetime(arr_in.initial_time0_hours.values)
-                date = f"{time.strftime('%Y-%m-%dZ%H:%M')}"
-                path_dir = f"/home/datos/geotiff/{var}"
-
-                try:
-                    os.makedirs(path_dir)
-                except OSError:
-                    print("Folder exist")
-                tiffname = f"{var}_{date}.tiff"
-                pathfile = f'{path_dir}/{tiffname}'
                 print(f'Saving: {pathfile}')
 
                 # WRITE GIFF
