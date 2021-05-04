@@ -106,7 +106,7 @@ def transformGrib(filename: str):
                                       dtype=gdal.GetDataTypeName(gdal.GDT_Float64).lower(),
                                       crs=grid.GetProjection(),
                                       transform=transform)
-                nw_ds.write(array1, 1)
+                nw_ds.write(np.flipud(array1), 1)
                 nw_ds.close()
 
 
