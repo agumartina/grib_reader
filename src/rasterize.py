@@ -118,7 +118,7 @@ def rasterize(regex: str, shapefile: str):
     proc = [getSeries.remote(filename, shapefile) for filename in it.gather_async()]
     ray.get(proc)
 
-    genWind()
+    # genWind()
 
 
 def main():
