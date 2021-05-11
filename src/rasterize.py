@@ -68,47 +68,6 @@ def getSeries(filename: str, shapefile: str):
     zonas.to_csv(filename, mode='a', header=False, encoding='utf-8')
 
 
-def genWind():
-    # Open generated CSV
-    run_dir = os.getenv('RUN_DIR')
-    file_spd = f'{run_dir}/csv/wspd.csv'
-    file_wdir = f'{run_dir}/csv/wdir.csv'
-    data_U_file = f'{run_dir}/csv/10U_GDS0_SFC.csv'
-    data_V_file = f'{run_dir}/csv/10V_GDS0_SFC.csv'
-    data_U = pd.read_csv(data_U_file, header=None)
-    data_V = pd.read_csv(data_V_file, header=None)
-
-    data_U["NAME"] = data_U[1]
-    data_U["data"] = data_U[2]
-    data_U["date"] = pd.to_datetime(data_U[3])
-    data_U = data_U[['NAME', 'data', 'date']]
-    data_V["NAME"] = data_V[1]
-    data_V["data"] = data_V[2]
-    data_V["date"] = pd.to_datetime(data_V[3])
-    data_V = data_V[['name', 'data', 'date']]
-
-    # Get unique values of zones
-    zonas = data_U.name.unique()
-
-    for zona in zonas:
-        zona_U = data_U.loc[data_U['NAME'] == zona]
-        zona_V = data_V.loc[data_V['NAME'] == zona]
-
-        WDIR = (270-np.rad2deg(np.arctan2(zona_V['data'], zona_U['data']))) % 360
-        WSPD = np.sqrt(np.square(zona_V['data']) + np.square(zona_U['data']))
-
-        zona_wspd = zona_V[['NAME', 'date']]
-        zona_wdir = zona_V[['NAME', 'date']]
-        zona_wdir.loc[:, 'wdir'] = WDIR.values
-        zona_wspd.loc[:, 'wspd'] = WSPD.values
-
-        zona_wdir.sort_index(inplace=True)
-        zona_wspd.sort_index(inplace=True)
-
-        zona_wspd.to_csv(file_spd, mode='a', header=None, encoding='utf-8')
-        zona_wdir.to_csv(file_wdir, mode='a', header=None, encoding='utf-8')
-
-
 def rasterize(regex: str, shapefile: str):
     filelist = getList(regex)
     if not filelist:
@@ -120,8 +79,6 @@ def rasterize(regex: str, shapefile: str):
 
     proc = [getSeries.remote(filename, shapefile) for filename in it.gather_async()]
     ray.get(proc)
-
-    # genWind()
 
 
 def main():
