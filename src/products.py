@@ -1,18 +1,14 @@
-import glob
 import argparse
-import os
 import numpy as np
-import geopandas as gpd
 import pandas as pd
-from datetime import datetime
 
 
 def genWind():
     # Open generated CSV
-    file_spd = f'csv/wspd.csv'
-    file_wdir = f'csv/wdir.csv'
-    data_U_file = f'csv/10U.csv'
-    data_V_file = f'csv/10V.csv'
+    file_spd = 'csv/wspd.csv'
+    file_wdir = 'csv/wdir.csv'
+    data_U_file = 'csv/10U.csv'
+    data_V_file = 'csv/10V.csv'
     data_U = pd.read_csv(data_U_file, header=None)
     data_V = pd.read_csv(data_V_file, header=None)
 
@@ -20,10 +16,12 @@ def genWind():
     data_U["data"] = data_U[2]
     data_U["date"] = pd.to_datetime(data_U[3])
     data_U = data_U[['NAME', 'data', 'date']]
+    data_U = data_U.sort_values(by='date')
     data_V["NAME"] = data_V[1]
     data_V["data"] = data_V[2]
     data_V["date"] = pd.to_datetime(data_V[3])
     data_V = data_V[['NAME', 'data', 'date']]
+    data_V = data_V.sort_values(by='date')
 
     # Get unique values of zones
     zonas = data_U.NAME.unique()
