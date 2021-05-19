@@ -11,8 +11,7 @@ from osgeo import osr, gdal, gdal_array
 from affine import Affine
 
 
-ray.init(address='auto', _redis_password='5241590000000000')
-
+ray.init(address='localhost:6379', _redis_password='5241590000000000')
 
 def getList(path: str):
     return glob.glob(path, recursive=True)
@@ -128,7 +127,7 @@ def main():
     filelist = getList(args.path)
     filelist.sort()
 
-    it = ray.util.iter.from_items(filelist, num_shards=4)
+    it = ray.util.iter.from_items(filelist, num_shards=32)
     proc = [transformGrib.remote(filename) for filename in it.gather_async()]
     ray.get(proc)
 

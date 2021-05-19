@@ -9,7 +9,8 @@ from rasterstats import point_query
 from datetime import datetime
 
 
-ray.init(address='auto', _redis_password='5241590000000000')
+ray.init(address='localhost:3681', _redis_password='5241590000000000')
+
 
 
 def getList(regex: str):

@@ -38,8 +38,8 @@ def genWind():
         zona_wdir.loc[:, 'wdir'] = WDIR.values
         zona_wspd.loc[:, 'wspd'] = WSPD.values
 
-        zona_wdir.sort_index(inplace=True)
-        zona_wspd.sort_index(inplace=True)
+        # zona_wdir.sort_index(inplace=True)
+        # zona_wspd.sort_index(inplace=True)
 
         zona_wspd.to_csv(file_spd, mode='a', header=None, encoding='utf-8')
         zona_wdir.to_csv(file_wdir, mode='a', header=None, encoding='utf-8')
