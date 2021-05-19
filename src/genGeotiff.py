@@ -11,7 +11,7 @@ from osgeo import osr, gdal, gdal_array
 from affine import Affine
 
 
-ray.init(address='auto', _redis_password='5241590000000000')
+ray.init(address='localhost:6380', _redis_password='5241590000000000')
 
 
 def getList(path: str):
@@ -39,12 +39,12 @@ def transformGrib(filename: str):
     ds = xr.open_dataset(filename, engine="pynio")
 
     for var in ds.variables:
-        if var in DICT_VAR:
+        if var in ['MDTS_GDS0_MSL', 'MPWW_GDS0_MSL']:
             for arr_in in ds[var]:
                 # Build filename
                 time = pd.to_datetime(arr_in.initial_time0_hours.values)
                 date = f"{time.strftime('%Y-%m-%dZ%H:%M')}"
-                path_dir = f"/home/datos/geotiff/{var}"
+                path_dir = f"../geotiff/{var}"
                 tiffname = f"{var}_{date}.tiff"
                 pathfile = f'{path_dir}/{tiffname}'
 
