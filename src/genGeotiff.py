@@ -11,7 +11,7 @@ from osgeo import osr, gdal, gdal_array
 from affine import Affine
 
 
-ray.init(address='localhost:6380', _redis_password='5241590000000000')
+ray.init(address='localhost:6379', _redis_password='5241590000000000')
 
 
 def getList(path: str):
@@ -39,7 +39,7 @@ def transformGrib(filename: str):
     ds = xr.open_dataset(filename, engine="pynio")
 
     for var in ds.variables:
-        if var in ['MDTS_GDS0_MSL', 'MPWW_GDS0_MSL']:
+        if var in [DICT_VAR]:
             for arr_in in ds[var]:
                 # Build filename
                 time = pd.to_datetime(arr_in.initial_time0_hours.values)
@@ -106,7 +106,7 @@ def transformGrib(filename: str):
                                       dtype=gdal.GetDataTypeName(gdal.GDT_Float64).lower(),
                                       crs=grid.GetProjection(),
                                       transform=transform)
-                nw_ds.write(np.flipud(array1), 1)
+                nw_ds.write(array1, 1)
                 nw_ds.close()
 
 
@@ -128,7 +128,7 @@ def main():
     filelist = getList(args.path)
     filelist.sort()
 
-    it = ray.util.iter.from_items(filelist, num_shards=4)
+    it = ray.util.iter.from_items(filelist, num_shards=32)
     proc = [transformGrib.remote(filename) for filename in it.gather_async()]
     ray.get(proc)
 
