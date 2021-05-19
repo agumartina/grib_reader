@@ -7,7 +7,7 @@ from rasterstats import point_query
 from datetime import datetime
 
 
-ray.init(address='localhost:3681', _redis_password='5241590000000000')
+ray.init(address='auto', _redis_password='5241590000000000')
 
 
 def getList(regex: str):
@@ -20,10 +20,10 @@ def getInfo(filename: str):
     nombre del archivo wrfout
     ../geotiff/10V_GDS0_SFC/10V_GDS0_SFC_1991-07-18Z22:00.tiff"""
     filename = filename.split('/')[-1]
-    var, temp = filename.split('_', 1)
-    temp1, temp1, timestamp = temp.split('_', 2)
+    var, timestamp = filename.split('_', 1)
+    # temp1, temp1, timestamp = temp.split('_', 2)
     timestamp, extension = timestamp.split('.', 1)
-    date = datetime.strptime(timestamp, "%Y-%m-%dZ%H:%M")
+    date = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
 
     return var, date
 
@@ -59,7 +59,7 @@ def getSeries(filename: str, shapefile: str):
 
     zonas_gdf = integrate_shapes(filename, shapefile)
     zonas_gdf = zonas_gdf[['NAME', 'data']]
-    zonas_gdf['date'] = datetime.strptime(filename[-21:-5], "%Y-%m-%dZ%H:%M")
+    zonas_gdf['date'] = date
     zonas = zonas.append(zonas_gdf, ignore_index=True)
     filename = f"csv/{var}.csv"
     print(f"Saving in {filename}")
